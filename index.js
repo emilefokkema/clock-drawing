@@ -33,11 +33,14 @@
 		constructor(transition, speed, period){
 			this.transition = transition;
 			this.speed = speed;
-			this.value = 0;
 			this.period = period;
-			this.targetValue = 0;
-			this.previousTargetValue = 0;
+			this.reset(0);
+		}
+		reset(value){
+			this.value = value;
 			this.phase = 0;
+			this.previousTargetValue = value;
+			this.targetValue = value;
 			this.latestTimeStamp = 0;
 		}
 		update(targetValue, timeStamp){
@@ -136,8 +139,15 @@
 			this.minuteHandAngle = 0;
 			this.hourHandAngle = 0;
 		}
-		update(timeStamp){
-			const date = new Date();
+		reset(date){
+			const {secondHandTargetAngle, minuteHandTargetAngle, hourHandTargetAngle} = this.getAngles(date);
+			this.secondHandTransitioningValue.reset(secondHandTargetAngle);
+			this.minuteHandTransitioningValue.reset(minuteHandTargetAngle);
+			this.secondHandAngle = this.secondHandTransitioningValue.value;
+			this.minuteHandAngle = this.minuteHandTransitioningValue.value;
+			this.hourHandAngle = hourHandTargetAngle;
+		}
+		getAngles(date){
 			const seconds = date.getSeconds();
 			const milliseconds = date.getMilliseconds();
 			const numberOfMillisecondsInMinute = seconds * 1000 + milliseconds;
@@ -147,11 +157,17 @@
 			const hours = date.getHours() % 12;
 			const secondHandTargetAngle = Math.PI * (2 * phaseOfMinute - 0.5);
 			const minuteHandTargetAngle = Math.PI * (minutes / 30 - 0.5);
+			const hourHandTargetAngle = Math.PI * (hours / 6 + minutes / 360 + seconds / 21600- 0.5);
+			return {secondHandTargetAngle, minuteHandTargetAngle, hourHandTargetAngle};
+		}
+		update(timeStamp){
+			const date = new Date();
+			const {secondHandTargetAngle, minuteHandTargetAngle, hourHandTargetAngle} = this.getAngles(date);
 			this.secondHandTransitioningValue.update(secondHandTargetAngle, timeStamp);
 			this.minuteHandTransitioningValue.update(minuteHandTargetAngle, timeStamp);
 			this.secondHandAngle = this.secondHandTransitioningValue.value;
 			this.minuteHandAngle = this.minuteHandTransitioningValue.value;
-			this.hourHandAngle = Math.PI * (hours / 6 + minutes / 360 + seconds / 21600- 0.5);
+			this.hourHandAngle = hourHandTargetAngle;
 		}
 	}
 	var canvas = document.getElementById('canvas');
@@ -164,6 +180,7 @@
 
 	var clockUi = new ClockUI(width, height);
 	var clock = new Clock();
+	clock.reset(new Date());
 
 	var draw = function(timeStamp){
 		clock.update(timeStamp);

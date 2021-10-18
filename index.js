@@ -71,6 +71,10 @@
 			this.secondHandLength = this.radius * 0.9;
 			this.minuteHandLength = this.radius * 0.8;
 			this.hourHandLength = this.radius / 2;
+			this.smallMarkerWidth = this.radius / 20;
+			this.smallMarkerHeight = this.radius / 30;
+			this.bigMarkerWidth = this.radius / 7;
+			this.bigMarkerHeight = this.radius / 20;
 		}
 		draw(context, clock){
 			context.translate(this.width / 2, this.height / 2);
@@ -102,10 +106,7 @@
 				const angle = Math.PI * (i / 30 - 0.5);
 				context.save();
 				context.rotate(angle);
-				context.beginPath();
-				context.moveTo(this.radius * 0.9, 0);
-				context.lineTo(this.radius, 0);
-				context.stroke();
+				context.fillRect(this.radius - this.smallMarkerWidth, -this.smallMarkerHeight / 2, this.smallMarkerWidth, this.smallMarkerHeight);
 				context.restore();
 			}
 			context.lineWidth = 3;
@@ -113,10 +114,7 @@
 				const angle = Math.PI * (i / 6 - 0.5);
 				context.save();
 				context.rotate(angle);
-				context.beginPath();
-				context.moveTo(this.radius * 0.8, 0);
-				context.lineTo(this.radius, 0);
-				context.stroke();
+				context.fillRect(this.radius - this.bigMarkerWidth, -this.bigMarkerHeight / 2, this.bigMarkerWidth, this.bigMarkerHeight);
 				context.restore();
 			}
 			context.restore();

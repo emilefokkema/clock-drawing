@@ -57,6 +57,8 @@
 			let timeDifference = timeStamp - this.latestTimeStamp;
 			if(timeDifference > 1000){
 				timeDifference = 0;
+				this.phase = 1;
+				this.value = this.targetValue;
 			}
 			this.latestTimeStamp = timeStamp;
 			this.phase = normalizeToZeroOne(this.phase + timeDifference * this.speed);
@@ -68,20 +70,11 @@
 			this.width = width;
 			this.height = height;
 			this.radius = Math.min(width / 2, height / 2) * 0.7;
-			this.secondHandLength = this.radius * 0.9;
-			this.minuteHandLength = this.radius * 0.8;
-			this.hourHandLength = this.radius / 2;
-			this.smallMarkerWidth = this.radius / 20;
-			this.smallMarkerHeight = this.radius / 30;
-			this.bigMarkerWidth = this.radius / 7;
-			this.bigMarkerHeight = this.radius / 20;
 		}
 		draw(context, clock){
 			context.translate(this.width / 2, this.height / 2);
-			context.lineWidth = 2;
-			context.beginPath();
-			context.arc(0, 0, this.radius, 0, 2 * Math.PI);
-			context.stroke();
+			context.scale(this.radius, this.radius);
+			this.drawFace(context);
 			this.drawMarkers(context);
 			context.save();
 			context.rotate(clock.hourHandAngle);
@@ -95,10 +88,45 @@
 			context.rotate(clock.secondHandAngle);
 			this.drawSecondHand(context);
 			context.restore();
+			this.drawCase(context);
+		}
+		drawFace(context){
+			context.save();
+			const gradient = context.createRadialGradient(0, 0, 0.9, 0, 0, 1.03);
+			gradient.addColorStop(0, '#fff');
+			gradient.addColorStop(1, '#222');
+			context.fillStyle = gradient;
+			context.beginPath();
+			context.arc(0, 0, 1.05, 0, 2 * Math.PI);
+			context.fill();
+			context.restore();
+		}
+		drawCase(context){
+			context.save();
+			context.globalAlpha = 0.4;
+			let gradient = context.createLinearGradient(-0.5, -0.5, 0.5, 0.5);
+			gradient.addColorStop(0, 'rgba(150,150,200,0.5)');
+			gradient.addColorStop(0.5, '#fff');
+			gradient.addColorStop(1, 'rgba(150,150,200,0.5)');
+			context.fillStyle = gradient;
+			context.beginPath();
+			context.arc(0, 0, 1.1, 0, 2 * Math.PI);
+			context.fill();
+			context.restore();
+			context.save();
+			gradient = context.createLinearGradient(-1, -1, 1, 1);
+			gradient.addColorStop(0, '#009');
+			gradient.addColorStop(0.5, '#44e');
+			gradient.addColorStop(1, '#009');
+			context.fillStyle = gradient;
+			context.beginPath();
+			context.arc(0, 0, 1.2, 0, 2 * Math.PI);
+			context.arc(0, 0, 1.03, 0, 2 * Math.PI);
+			context.fill("evenodd");
+			context.restore();
 		}
 		drawMarkers(context){
 			context.save();
-			context.lineWidth = 1;
 			for(let i = 0; i < 60; i++){
 				if(i % 5 === 0){
 					continue;
@@ -106,7 +134,7 @@
 				const angle = Math.PI * (i / 30 - 0.5);
 				context.save();
 				context.rotate(angle);
-				context.fillRect(this.radius - this.smallMarkerWidth, -this.smallMarkerHeight / 2, this.smallMarkerWidth, this.smallMarkerHeight);
+				context.fillRect(0.9, -0.017, 0.1, 0.034);
 				context.restore();
 			}
 			context.lineWidth = 3;
@@ -114,19 +142,69 @@
 				const angle = Math.PI * (i / 6 - 0.5);
 				context.save();
 				context.rotate(angle);
-				context.fillRect(this.radius - this.bigMarkerWidth, -this.bigMarkerHeight / 2, this.bigMarkerWidth, this.bigMarkerHeight);
+				context.fillRect(0.72, -0.03, 0.28, 0.06);
 				context.restore();
 			}
 			context.restore();
 		}
 		drawSecondHand(context){
-			context.fillRect(0, -2, this.secondHandLength, 4);
+			context.save();
+			context.fillStyle = '#b00';
+			context.save();
+			context.shadowOffsetX = 5;
+			context.shadowOffsetY = 5;
+			context.shadowBlur = 5;
+			context.shadowColor = 'rgba(0,0,0,0.5)';
+			context.beginPath();
+			context.arc(0.6, 0, 0.1, 0, 2 * Math.PI);
+			context.arc(0.6, 0, 0.05, 0, 2 * Math.PI);
+			context.fill("evenodd");
+			context.beginPath();
+			context.rect(-1, -1, 2, 2);
+			context.arc(0.6, 0, 0.075, 0, 2 * Math.PI);
+			context.clip("evenodd");
+			context.beginPath();
+			context.moveTo(-0.3, -0.025);
+			context.lineTo(0.95, -0.007);
+			context.lineTo(0.95, 0.007);
+			context.lineTo(-0.3, 0.025);
+			context.fill();
+			context.restore();
+			context.beginPath();
+			context.arc(0.6, 0, 0.1, 0, 2 * Math.PI);
+			context.arc(0.6, 0, 0.05, 0, 2 * Math.PI);
+			context.fill("evenodd");
+			context.restore();
 		}
 		drawMinuteHand(context){
-			context.fillRect(0, -3, this.minuteHandLength, 6);
+			context.save();
+			context.shadowOffsetX = 5;
+			context.shadowOffsetY = 5;
+			context.shadowBlur = 5;
+			context.shadowColor = 'rgba(0,0,0,0.5)';
+			context.beginPath();
+			context.moveTo(-0.3, -0.035);
+			context.lineTo(0.9, -0.035);
+			context.lineTo(0.95, 0);
+			context.lineTo(0.9, 0.035);
+			context.lineTo(-0.3, 0.035);
+			context.fill();
+			context.restore();
 		}
 		drawHourHand(context){
-			context.fillRect(0, -3, this.hourHandLength, 6);
+			context.save();
+			context.shadowOffsetX = 5;
+			context.shadowOffsetY = 5;
+			context.shadowBlur = 5;
+			context.shadowColor = 'rgba(0,0,0,0.5)';
+			context.beginPath();
+			context.moveTo(-0.25, -0.04);
+			context.lineTo(0.5, -0.04);
+			context.lineTo(0.55, 0);
+			context.lineTo(0.5, 0.04);
+			context.lineTo(-0.25, 0.04);
+			context.fill();
+			context.restore();
 		}
 	}
 	class Clock{

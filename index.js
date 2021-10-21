@@ -29,6 +29,12 @@
 			return (1 + Math.sin((phase - 0.5) * Math.PI)) / 2;
 		}
 	}
+	class SpringTransition{
+		phaseToPosition(phase){
+			phase = normalizeToZeroOne(phase);
+			return 6.634806 * phase - 11.469158 * phase * phase + 5.834352 * phase * phase * phase;
+		}
+	}
 	class TransitioningValue{
 		constructor(transition, speed, period){
 			this.transition = transition;
@@ -210,7 +216,7 @@
 	class Clock{
 		constructor(){
 			this.secondHandTransitioningValue = new TransitioningValue(new SineTransition(), 0.001, 2 * Math.PI);
-			this.minuteHandTransitioningValue = new TransitioningValue(new SineTransition(), 0.001, 2 * Math.PI);
+			this.minuteHandTransitioningValue = new TransitioningValue(new SpringTransition(), 0.006, 2 * Math.PI);
 			this.secondHandAngle = 0;
 			this.minuteHandAngle = 0;
 			this.hourHandAngle = 0;
@@ -227,7 +233,7 @@
 			const seconds = date.getSeconds();
 			const milliseconds = date.getMilliseconds();
 			const numberOfMillisecondsInMinute = seconds * 1000 + milliseconds;
-			let phaseOfMinute = numberOfMillisecondsInMinute < 750 ? 0 : (numberOfMillisecondsInMinute > 59250 ? 1 : (numberOfMillisecondsInMinute - 750) / 58500);
+			let phaseOfMinute = numberOfMillisecondsInMinute < 58500 ? numberOfMillisecondsInMinute / 58500 : 1;
 			phaseOfMinute = Math.floor(60 * phaseOfMinute) / 60;
 			const minutes = date.getMinutes();
 			const hours = date.getHours() % 12;
